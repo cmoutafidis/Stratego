@@ -1943,17 +1943,6 @@ public class MainMenu extends JFrame{
 		
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			
-			try {
-				InputStream in = new FileInputStream("music/bars.wav");
-	        	AudioStream as = new AudioStream(in);         
-	        	AudioPlayer.player.start(as); 
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			} catch (IOException p) {
-				p.printStackTrace();
-			}
-			
 			Position[][] pos = Game.getInstance().getBoard();
 			
 			int p = list.getSelectedIndex();
@@ -2520,17 +2509,6 @@ public class MainMenu extends JFrame{
 	class ButtonListener1 implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			
-			try {
-				InputStream in = new FileInputStream("music/bars.wav");
-	        	AudioStream as = new AudioStream(in);         
-	        	AudioPlayer.player.start(as); 
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			} catch (IOException p) {
-				p.printStackTrace();
-			}
-			
 			int x = 0;
 			String playerRED = "RED";
 			String playerBLUE = "BLUE";
