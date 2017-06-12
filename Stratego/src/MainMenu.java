@@ -2505,7 +2505,7 @@ public class MainMenu extends JFrame{
 	   
 	    return OK;
 	}
-	
+	//listener
 	class ButtonListener1 implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
@@ -2518,7 +2518,7 @@ public class MainMenu extends JFrame{
 				for(String key : btnB.keySet()){
 					char[] fcoords = key.toCharArray();
 					if(arg0.getSource().equals(btnB.get(key))){
-						//EDW KSEKINA H PARTIDA
+						//EDW KSEKINA H PARTIDA  
 						//POLY APLA:EFOSON KSEKINA PANTA O BLUE TYPOS OTAN O GYROS EINAI MONOS(TO countTurn) TOTE 8A PREPEI NA EPILEKSEI 8ESH
 						//OPOU EXEI DIKO TOY PIONI, GIA NA KSEKINHSEI O GYROS, DHLADH TO PRVTO BUTTON POU EPILEGETAI NA EINAI DIKO TOY. TA IDIA
 						//ISXYOUN KAI GIA TO RED TYPO, ME TH DIAFORA OTI O GYROS PREPEI NA EINAI ZYGOS ARITHMOS
