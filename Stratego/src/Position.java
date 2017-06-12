@@ -18,7 +18,7 @@ public class Position implements Serializable{
 	}
 
 	public void removePawnFromPosition(){
-		this.pawnOnPosition = null;
+		this.pawnOnPosition = new Pawn("","");
 	}
 	
 	public void addPawnToPosition(Pawn pawn){

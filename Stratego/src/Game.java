@@ -9,19 +9,38 @@ import java.util.ArrayList;
 
 public class Game implements Serializable{
 	private String gameName;
-	private Player player1;
-	private Player player2;
+	private Player player1 = null;
+	private Player player2 = null;
 	private Position[][] board;
-	private long timeStarted; //ti wra arxise to create/load.
+	private long timeStarted = 0; //ti wra arxise to create/load.
 	private double gameTime; //posi wra trexei to paixnidi mexri twra.
 	private boolean gameIsOver;
 	
+	private static Game instance = null;
+	
 	//create new game.
-	public Game(Player player1, Player player2){
-		this.player1 = player1;
-		this.player2 = player2;
-		this.board = new Position[10][10];
+	
+	public static Game getInstance() {
+	      if(instance == null) {
+	         instance = new Game();
+	      }
+	      return instance;
+	   }
+	
+	public void setBoard(Position[][] b){
+		this.board = b;
+	}
+	
+	public void setInstance(Game game){
+		Game.instance = game;
+	}
+	
+	public void startTime(){
 		this.timeStarted = System.currentTimeMillis();
+	}
+	
+	private Game(){
+		this.board = new Position[10][10];
 		this.gameTime = 0;
 		this.gameIsOver = false;
 		
@@ -31,13 +50,14 @@ public class Game implements Serializable{
 			}
 		}
 		
-		for(int i=4;i<6;i++){
-			this.board[i][2].setAccess(false);
-			this.board[i][3].setAccess(false);
-			this.board[i][6].setAccess(false);
-			this.board[i][7].setAccess(false);
+	}
+	
+	public void setPlayers(Player player1, Player player2){
+		if(this.player1==null){
+			this.player1 = player1;
+			this.player2 = player2;
+			this.saveGameFirstTime();
 		}
-		this.saveGameFirstTime();
 	}
 	
 	//load game.
@@ -86,8 +106,10 @@ public class Game implements Serializable{
 	}
 	
 	public void saveGame(){
-		long tEnd = System.currentTimeMillis();
-		gameTime += (tEnd - timeStarted)/1000.0;
+		if(timeStarted!=0){
+			long tEnd = System.currentTimeMillis();
+			gameTime += (tEnd - timeStarted)/1000.0;
+		}
 		
 		FileOutputStream fout;
 		ObjectOutputStream oos;

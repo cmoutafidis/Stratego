@@ -1,7 +1,9 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,8 +20,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import javax.swing.BorderFactory;
@@ -40,6 +44,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicBorders;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -64,15 +69,43 @@ public class MainMenu extends JFrame{
 	private JList list = new JList();
 	private JButton button = new JButton();
 	private ArrayList<Pawn> pawns = new ArrayList<Pawn>();
-	private int[] freqs = new int[12];
+	private ArrayList<Integer> freqs;
 	private DefaultListModel model = new DefaultListModel();
+	/**
+	 * 
+	 */
 	private Position[][] positions = new Position[10][10];
-	private static int vo = 0;
+	private static int vo;
 	private ArrayList<Pawn> bluepawns;
 	private Position[][] pos = new Position[10][10];
-	private String[] array = {"B", "F", "10", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	private ArrayList<String> array = new ArrayList<String>();
+	
+	private JPanel contentPane = new JPanel();
+	private HashMap<String,JButton> btnB = new HashMap<String,JButton>();
+	private Pawn thePawn;
+	private ArrayList<Integer> frequencies;
+	private static int countTurn;
+	private String color;
+	
+	private static Movable attacker = new Movable("","",0);
+	private static boolean blueIsOK = false;
+	private static boolean redIsOK = false;
+	private int blocksToMove = 1;
 	
 	public MainMenu(){
+		
+		array.add("B");
+		array.add("F");
+		array.add("10");
+		array.add("1");
+		array.add("2");
+		array.add("3");
+		array.add("4");
+		array.add("5");
+		array.add("6");
+		array.add("7");
+		array.add("8");
+		array.add("9");
 		
 		bluepawns = new ArrayList<Pawn>();
 		
@@ -117,7 +150,7 @@ public class MainMenu extends JFrame{
 			bluepawns.add(new Immovable("B","BLUE"));
 		}
 		
-		main();
+		login();
 		
 	    setExtendedState(JFrame.MAXIMIZED_BOTH); 
 	    setUndecorated(true);
@@ -126,8 +159,8 @@ public class MainMenu extends JFrame{
 	    setVisible(true);
 	}
 	
-	public MainMenu(ArrayList<Pawn> pawnNames, boolean empty, int[] replicas, Position[][] pos){
-		PawnList(pawnNames,empty,replicas,pos);
+	public MainMenu(ArrayList<Pawn> pawnNames, boolean empty, int[] replicas){
+		PawnList(pawnNames,empty);
 	}
 	
 	public void login(){
@@ -716,7 +749,7 @@ public class MainMenu extends JFrame{
 		newGame.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                PawnList(bluepawns,true,freqs,pos);
+                PawnList(bluepawns,true);
             }
         });
 		newGame.addMouseListener(new MouseAdapter() {
@@ -1294,6 +1327,47 @@ public class MainMenu extends JFrame{
             	
             }
         });
+	    load.addMouseListener(new MouseAdapter() {
+	        public void mousePressed(MouseEvent me) {
+	        	if(fileNameToLoad!=null){
+	        		FileInputStream streamIn;
+					try {
+						streamIn = new FileInputStream("saves/" + fileNameToLoad);
+						ObjectInputStream objectinputstream = new ObjectInputStream(streamIn);
+						Game game = Game.getInstance();
+		        	    game.setInstance((Game) objectinputstream.readObject());
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+					FinalBoard();
+	        	}
+	        }
+	    });
+	    load.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	if(fileNameToLoad!=null){
+            		try {
+    					InputStream in = new FileInputStream("music/button.wav");
+    	            	AudioStream as = new AudioStream(in);         
+    	            	AudioPlayer.player.start(as); 
+    				} catch (FileNotFoundException e1) {
+    					e1.printStackTrace();
+    				} catch (IOException e1) {
+    					e1.printStackTrace();
+    				}
+            	}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
 	    //end listener
 	    
 	    JPanel p1 = new JPanel(new BorderLayout());
@@ -1424,33 +1498,37 @@ public class MainMenu extends JFrame{
 		SwingUtilities.updateComponentTreeUI(this);
 	}
 	
-	public void PawnList(ArrayList<Pawn> pawnNames, boolean empty, int[] replicas, Position[][] pos) {
+	public void PawnList(ArrayList<Pawn> pawnNames, boolean empty) {
+		frame = this;
+		frequencies = new ArrayList<Integer>();
+		freqs = new ArrayList<Integer>();
+		vo = 0;
+		countTurn = 1;
+		color = "BLUE";
+		
+		setLayout(new BorderLayout(1,1));
+	    setContentPane(new JLabel(new ImageIcon("backrounds/Gameplay_BG.png")));
+	    setLayout(new BorderLayout(0,0));
+	    
 		int i = 0;
 		int j = 0;
 		int counter = 0;
 		Pawn somePawn = new Pawn("","");
+		Game game = Game.getInstance();
+		game.setPlayers(player1, player2);
+		
+		positions = game.getBoard();
 		
 		if(vo==0){
 			for(i=0;i<10;i++){
 				for(j=0;j<10;j++){
 					positions[i][j] = new Position();
 					positions[i][j].addPawnToPosition(somePawn);
-					pos[i][j] = new Position();
-					pos[i][j].addPawnToPosition(somePawn);
-					positions[i][j].addPawnToPosition(pos[i][j].getPawnOnPosition());
 				}
 			}
 		}
-		else{
-			for(i=0;i<10;i++){
-				for(j=0;j<10;j++){
-					positions[i][j] = new Position();
-					positions[i][j].addPawnToPosition(somePawn);
-					positions[i][j].addPawnToPosition(pos[i][j].getPawnOnPosition());
-				}
-			}
-		}
-		Collections.sort(pawnNames);
+		
+		Collections.sort(bluepawns);
 		ArrayList<String> pawnTypes = new ArrayList<String>();
 		
 		for(Pawn pawn : pawnNames){
@@ -1459,79 +1537,824 @@ public class MainMenu extends JFrame{
 		
 		HashSet<String> noMultiples = new HashSet<String>(pawnTypes);
 		
-		for(String name : noMultiples){
-			model.addElement(name);
+		if(vo==0){
+			for(String name : noMultiples){
+				ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + color + name + ".png"));
+			    Image img = icon.getImage() ;  
+			    Image newimg = img.getScaledInstance(75, 75,  java.awt.Image.SCALE_SMOOTH ) ;  
+			    icon = new ImageIcon( newimg );
+				model.addElement(icon);
+			}
 		}
-		pawns.addAll(pawnNames);
+		pawns = pawnNames;
 		list.setModel(model);
 		
-		ButtonListener listener = new ButtonListener();
-		button.addActionListener(listener);
 		i=0;
-		if(empty){
-			for(String name : noMultiples) {
-				counter = Collections.frequency(pawnTypes, name);
-				freqs[i] = counter;
-				i++;
-			}
-		}
-		else{
-			for(i=0;i<12;i++){
-				freqs[i] = replicas[i];
-			}
+		for(String name : noMultiples) {
+			counter = Collections.frequency(pawnTypes, name);
+			freqs.add(counter);
 		}
 		
-		for(int k=0;k<12;k++){
-			if(freqs[k]==0){
-				for(int p=0;p<model.getSize();p++){
-					if(model.getElementAt(p).equals(array[k])){
-						model.removeElementAt(p);
-					}
-				}
-			}
-		}
+		frequencies = freqs;
+		
+		panel.setLayout(new FlowLayout());
+		panel.add(list);
+		panel.setBorder(new EmptyBorder(10,0,0,0));
 		
 		vo++;
-		this.setContentPane(panel);
-		this.panel.add(list);
-		this.panel.add(button);
-		this.setVisible(true);
-		this.setSize(300, 300);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
-	
-	public void closeFrame(){
-		super.dispose();
-	}
-	
-	class ButtonListener implements ActionListener{
-		public void actionPerformed(ActionEvent e){
-			int i = 0;
-			Pawn selectedPawn = null;
-			if(list.getSelectedValue()!=null){
+		setLayout(new BorderLayout());
+		add(panel, BorderLayout.EAST);
+		panel.setOpaque(false);
+		
+		frequencies = freqs;
+		
+		JButton button;
+		this.contentPane.setLayout(new GridLayout(10, 10));
+		
+		ButtonListener listener1 = new ButtonListener();
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){  //ekana tis 2 for mia. Kanei new button, prosthetei listener kai to vazei sto hashmap
+				button = new JButton();//kai sto contentPane.
+				String colorr = positions[i][j].getPawnOnPosition().getPawnColor();
+				String type = positions[i][j].getPawnOnPosition().getPawnType();
 				
-				String selected = (String)list.getSelectedValue();
+				button.addActionListener(listener1);
+				btnB.put("B" + i + j, button);
+				contentPane.add(button);
 				
-				for(int j=0;j<12;j++){
-					if(array[j].equals(selected)){
-						i = j;
-					}
-				}
-				
-				if(freqs[i]==0){
-					
-				}
-				else{
-					for(Pawn pawn : pawns){
-						if(pawn.getPawnType().equals(selected)){
-							selectedPawn = pawn;
+				if(countTurn<13){
+					if(i<6)
+						button.setEnabled(false);
+					else{
+						if(!colorr.equals("")){
+							button.setEnabled(false);
+							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + thePawn.getPawnColor() + thePawn.getPawnType() + ".png"));
+						    Image img = icon.getImage() ;  
+						    Image newimg = img.getScaledInstance(button.getWidth(), button.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+						    icon = new ImageIcon( newimg );
+						    button.setIcon(icon);
 						}
 					}
-					new TheBoard(selectedPawn,pawns,freqs,positions);
-					closeFrame();
+				}
+				else if(countTurn<25){
+					color = "RED";
+					if(i>3){
+						if(i>3){
+							if(!colorr.equals("")){
+								button.setBackground(Color.CYAN);
+							}
+							button.setEnabled(false);
+						}
+						button.setEnabled(false);
+					}
+					else{
+						if(!colorr.equals("")){
+							button.setEnabled(false);
+							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + thePawn.getPawnColor() + thePawn.getPawnType() + ".png"));
+						    Image img = icon.getImage() ;  
+						    Image newimg = img.getScaledInstance(button.getWidth(), button.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+						    icon = new ImageIcon( newimg );
+						    button.setIcon(icon);
+						}
+					}
 				}
 			}
+		}
+		contentPane.setBorder(new EmptyBorder(20, 50, 0, 50));
+		add(contentPane, BorderLayout.CENTER);
+		contentPane.setOpaque(false);
+		
+		JLabel exit = new JLabel("EXIT");
+		
+		//font
+	    exit.setFont(exit.getFont().deriveFont(35f));
+		
+		//border
+	    Border border = BorderFactory.createLineBorder(Color.BLACK);
+	    exit.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+		
+		//alignment
+	    exit.setHorizontalAlignment(JTextField.CENTER);
+		
+		//start listener
+		exit.addMouseListener(new MouseAdapter() {
+	        public void mousePressed(MouseEvent me) {
+	        	main();
+	        }
+	    });
+		exit.addMouseListener(new MouseAdapter() {
 			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+	    //end listener
+		
+		JPanel p1 = new JPanel(new BorderLayout());
+		p1.setBackground(new Color(230,230,0,80));
+		p1.add(exit, BorderLayout.WEST);
+		add(p1, BorderLayout.PAGE_END);
+		
+		JPanel panel2 = new JPanel();
+		panel2.setBorder(new EmptyBorder(0, 0, 10, 800));
+		panel2.add(p1);
+		panel2.setOpaque(false);
+	    
+		add(panel2, BorderLayout.PAGE_END);
+		
+		SwingUtilities.updateComponentTreeUI(this);
+	}
+	
+	class ButtonListener implements ActionListener {
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			Position[][] pos = Game.getInstance().getBoard();
+			
+			int p = list.getSelectedIndex();
+			Pawn selectedPawn = null;
+			
+			if(p!=-1){
+				
+				if(countTurn>12){
+					pawns = new ArrayList<Pawn>();
+					for(int i=1;i<11;i++){
+						switch(i){
+						case 1:
+						case 9:
+						case 10:
+							pawns.add(new Movable(Integer.toString(i),"RED",1));
+							break;
+						case 8:
+							for(int k=0;k<2;k++){
+								pawns.add(new Movable(Integer.toString(i),"RED",1));
+							}
+							break;
+						case 7:
+							for(int k=0;k<3;k++){
+								pawns.add(new Movable(Integer.toString(i),"RED",1));
+							}
+							break;
+						case 4:
+						case 5:
+						case 6:
+							for(int k=0;k<4;k++){
+								pawns.add(new Movable(Integer.toString(i),"RED",1));
+							}
+							break;
+						case 3:
+							for(int k=0;k<5;k++){
+								pawns.add(new Movable(Integer.toString(i),"RED",1));
+							}
+							break;
+						case 2:
+							for(int k=0;k<8;k++){
+								pawns.add(new Movable(Integer.toString(i),"RED",9));
+							}
+							break;
+						}
+					}
+					pawns.add(new Immovable("F","RED"));
+					for(int k=0;k<6;k++){
+						pawns.add(new Immovable("B","RED"));
+					}
+				}
+				
+				for(Pawn pawn : pawns){
+					if(pawn.getPawnType().equals(array.get(p))){
+						selectedPawn = pawn;
+					}
+				}
+				thePawn = selectedPawn;
+				
+				//detects which button was pressed	
+				int i;
+				int y = 0;
+				int j = 0;
+				boolean OK = false;
+				
+				for(String key : btnB.keySet()){
+					if(arg0.getSource().equals(btnB.get(key))){
+						if(countTurn<25){
+							
+							int index = 0;
+							for(int count=0;count<array.size();count++){
+								if(array.get(count).equals(thePawn.getPawnType())){
+									index = count;
+								}
+							}
+							frequencies.get(index);
+							frequencies.set(index, (frequencies.get(index)-1));
+							
+							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + thePawn.getPawnColor() + thePawn.getPawnType() + ".png"));
+						    Image img = icon.getImage() ;  
+						    Image newimg = img.getScaledInstance( btnB.get(key).getWidth(), btnB.get(key).getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+						    icon = new ImageIcon( newimg );
+						    btnB.get(key).setIcon(icon);
+							char[] abc = key.toCharArray();
+							int xz = abc[1]-48,yz = abc[2]-48;
+							positions[xz][yz].addPawnToPosition(thePawn);
+							btnB.get(key).setEnabled(false);//apotrepei to xrhsth apo to na topo8ethsei se ena button ola ta pionia idias aksias tou
+							
+							if(frequencies.get(index)==0){
+								if(countTurn!=12){
+									if(countTurn!=24){
+										model.removeElementAt(index);
+										array.remove(index);
+										countTurn++;
+										frequencies.remove(index);
+									}
+									else{
+										model.removeElementAt(index);
+										array.remove(index);
+										countTurn++;
+										frequencies.remove(index);
+										countTurn = 0;
+										FinalBoard();
+									}
+								}
+								else{
+									model.removeElementAt(index);
+									array.remove(index);
+									countTurn++;
+									frequencies.remove(index);
+									color = "RED";
+									
+									array.add("B");
+									array.add("F");
+									array.add("10");
+									array.add("1");
+									array.add("2");
+									array.add("3");
+									array.add("4");
+									array.add("5");
+									array.add("6");
+									array.add("7");
+									array.add("8");
+									array.add("9");
+									
+									Collections.sort(bluepawns);
+									ArrayList<String> pawnTypes = new ArrayList<String>();
+									
+									for(Pawn pawn : bluepawns){
+										pawnTypes.add(pawn.getPawnType());
+									}
+									
+									HashSet<String> noMultiples = new HashSet<String>(pawnTypes);
+									
+									for(String name : noMultiples) {
+										counter = Collections.frequency(pawnTypes, name);
+										freqs.add(counter);
+									}
+									
+									for(String name : noMultiples){
+										icon = new ImageIcon(getClass().getResource("/images/" + color + name + ".png"));
+									    img = icon.getImage() ;  
+									    newimg = img.getScaledInstance(75, 75,  java.awt.Image.SCALE_SMOOTH ) ;  
+									    icon = new ImageIcon( newimg );
+										model.addElement(icon);
+									}
+									
+									String s;
+									JButton b;
+									for(int row=0;row<10;row++){
+										for(int col=0;col<10;col++){
+											s = "B" + row + col;
+											btnB.get(s).setEnabled(true);
+											b = btnB.get(s);
+											
+											String colorr = positions[row][col].getPawnOnPosition().getPawnColor();
+											String type = positions[row][col].getPawnOnPosition().getPawnType();
+											
+											if(row>3){
+												if(row>3){
+													if(!colorr.equals("")){
+														b.setBackground(Color.CYAN);
+														b.setIcon(null);
+													}
+													b.setEnabled(false);
+												}
+												b.setEnabled(false);
+											}
+										}
+									}
+									
+									SwingUtilities.updateComponentTreeUI(frame);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void FinalBoard(){
+		
+		setLayout(new BorderLayout(1,1));
+	    setContentPane(new JLabel(new ImageIcon("backrounds/Gameplay_BG.png")));
+	    setLayout(new BorderLayout(0,0));
+		
+		contentPane = new JPanel();
+		btnB = new HashMap<String,JButton>();
+		pawns = new ArrayList<Pawn>();
+		positions = new Position[10][10];
+		
+		blocksToMove = 1;
+		int i,j;
+		Pawn somePawn = new Pawn("","");
+		
+		Game game = Game.getInstance();
+		Position[][] pos = game.getBoard();
+		
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){
+				if(pos[i][j].getPawnOnPosition().getPawnType().equals("")){
+					somePawn = new Pawn("","");
+					positions[i][j] = new Position();
+					positions[i][j].addPawnToPosition(somePawn);
+					positions[i][j].setAccess(true);
+				}
+				else{
+					positions[i][j] = new Position();
+					positions[i][j].addPawnToPosition(pos[i][j].getPawnOnPosition());
+					positions[i][j].setAccess(pos[i][j].getAccess());
+				}
+			}
+		}
+		
+		positions[4][2].setAccess(false);
+		positions[4][2].getPawnOnPosition().setPawnType("L");
+		positions[4][3].setAccess(false);
+		positions[4][3].getPawnOnPosition().setPawnType("L");
+		positions[5][2].setAccess(false);
+		positions[5][2].getPawnOnPosition().setPawnType("L");
+		positions[5][3].setAccess(false);
+		positions[5][3].getPawnOnPosition().setPawnType("L");
+		positions[4][6].setAccess(false);
+		positions[4][6].getPawnOnPosition().setPawnType("L");
+		positions[4][7].setAccess(false);
+		positions[4][7].getPawnOnPosition().setPawnType("L");
+		positions[5][6].setAccess(false);
+		positions[5][6].getPawnOnPosition().setPawnType("L");
+		positions[5][7].setAccess(false);
+		positions[5][7].getPawnOnPosition().setPawnType("L");
+		countTurn++;
+		JButton button;
+		contentPane.setLayout(new GridLayout(10, 10));
+		ButtonListener1 listener = new ButtonListener1();
+		
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){  //ekana tis 2 for mia. Kanei new button, prosthetei listener kai to vazei sto hashmap
+				button = new JButton();//kai sto contentPane.
+				button.addActionListener(listener);
+				btnB.put("B" + i + j, button);
+				contentPane.add(button);
+			}
+		}
+		this.setLayout(new BorderLayout());
+		contentPane.setBorder(new EmptyBorder(20, 50, 0, 100));
+		this.add(contentPane, BorderLayout.CENTER);
+		contentPane.setOpaque(false);
+		
+		SwingUtilities.updateComponentTreeUI(this);
+		
+		for(i=0;i<10;i++){
+			for(j=0;j<10;j++){
+				if(positions[i][j].getAccess()){
+					if(positions[i][j].getPawnOnPosition().getPawnColor().equals("BLUE")){
+						if(countTurn%2==1){
+							JButton b = btnB.get("B" + i + j);
+							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
+						    Image img = icon.getImage() ;  
+						    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+						    icon = new ImageIcon( newimg );
+						    b.setIcon(icon);
+						}
+						else{
+							JButton b = btnB.get("B" + i + j);
+							b.setBackground(Color.CYAN);
+							b.setIcon(null);
+						}
+						
+					}
+					else if(positions[i][j].getPawnOnPosition().getPawnColor().equals("RED")){
+						if(countTurn%2==0){
+							JButton b = btnB.get("B" + i + j);
+							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
+						    Image img = icon.getImage() ;  
+						    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+						    icon = new ImageIcon( newimg );
+						    b.setIcon(icon);
+						}
+						else{
+							JButton b = btnB.get("B" + i + j);
+							b.setBackground(Color.RED);
+							b.setIcon(null);
+						}
+					}
+				}
+				else{
+					JButton b = btnB.get("B" + i + j);
+					b.setEnabled(false);
+					b.setBackground(Color.BLUE);
+				}
+			}
+		}
+		
+		JLabel exit = new JLabel("EXIT");
+		JLabel save = new JLabel("SAVE");
+		
+		//font
+	    exit.setFont(exit.getFont().deriveFont(35f));
+	    save.setFont(exit.getFont().deriveFont(35f));
+	    
+	    //border
+	    Border border = BorderFactory.createLineBorder(Color.BLACK);
+	    exit.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+	    save.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+		
+		//alignment
+	    exit.setHorizontalAlignment(JTextField.CENTER);
+	    save.setHorizontalAlignment(JTextField.CENTER);
+		
+		//start listener
+		exit.addMouseListener(new MouseAdapter() {
+	        public void mousePressed(MouseEvent me) {
+	        	main();
+	        }
+	    });
+		exit.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+		save.addMouseListener(new MouseAdapter() {
+	        public void mousePressed(MouseEvent me) {
+	        	Game game = Game.getInstance();
+	        	game.saveGame();
+	        }
+	    });
+		save.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+	    //end listener
+		
+		JPanel p1 = new JPanel(new BorderLayout());
+		p1.setBackground(new Color(230,230,0,80));
+		p1.add(exit, BorderLayout.CENTER);
+		
+		JPanel panel2 = new JPanel();
+		panel2.setBorder(new EmptyBorder(0, 0, 10, 100));
+		panel2.add(p1);
+		panel2.setOpaque(false);
+		
+		JPanel panel3 = new JPanel();
+		panel3.setBorder(new EmptyBorder(0, 0, 10, 800));
+		panel3.add(panel2);
+		panel3.add(save);
+		panel3.setOpaque(false);
+		
+		add(panel3, BorderLayout.PAGE_END);
+		
+		SwingUtilities.updateComponentTreeUI(this);
+	}
+	
+	public boolean blockManager(String key, Movable attacker){
+	    ArrayList<String> blocks = new ArrayList<String>();
+	    boolean OK=false;
+	    int i,j;
+	    char fcoords[] = key.toCharArray();
+	    i=fcoords[1]-48;
+	    j=fcoords[2]-48;
+	    int k=i-1,l=j-1;
+	    BasicBorders.ButtonBorder border = new BasicBorders.ButtonBorder(Color.YELLOW,Color.YELLOW,Color.YELLOW,Color.YELLOW);
+	    String thiscolor = attacker.getPawnColor();
+	    String othercolor;
+	    int left = 0;
+	    int right = 9;
+	    int up = 0;
+	    int down = 9;
+	    
+	    if(thiscolor.equals("BLUE"))
+	    	othercolor = "RED";
+	    else
+	    	othercolor = "BLUE";
+	    
+	    if(attacker.getBlocksPawnCanMove()==1){
+	        blocks.add("B" + k + j);
+	        k+=2;
+	        blocks.add("B" + k + j);
+	        blocks.add("B" + i + l);
+	        l+=2;
+	        blocks.add("B" + i + l);
+	    }
+	    else{
+	        if(i!=0){
+	        	for(k=i-1;k!=0;k--){
+	        		if(!positions[k][j].getPawnOnPosition().getPawnType().equals("")){
+	        			up = k;
+	        			break;
+	        		}
+	        	}
+	        }
+	        
+	        if(i!=9){
+	        	for(k=i+1;k<10;k++){
+	        		if(!positions[k][j].getPawnOnPosition().getPawnType().equals("")){
+	        			down = k;
+	        			break;
+	        		}
+	        	}
+	        }
+	        
+	        if(j!=0){
+	        	for(l=j-1;l!=0;l--){
+	        		if(!positions[i][l].getPawnOnPosition().getPawnType().equals("")){
+	        			left = l;
+	        			break;
+	        		}
+	        	}
+	        }
+	        
+	        if(j!=9){
+	        	for(l=j+1;l<10;l++){
+	        		if(!positions[i][l].getPawnOnPosition().getPawnType().equals("")){
+	        			right = l;
+	        			break;
+	        		}
+	        	}
+	        }
+	        
+	        for(k=up;k<=down;k++){
+	            blocks.add("B" + k + j);
+	            for(l=left;l<=right;l++){
+		        	blocks.add("B" + i + l);
+		    	}
+	        }
+	    }
+	    
+	    for(String akey : btnB.keySet()){
+	    	if(blocks.contains(akey)){
+	    		char[] fcoords2 = akey.toCharArray();
+		       	if(positions[fcoords2[1]-48][fcoords2[2]-48].getPawnOnPosition().getPawnColor().equals(thiscolor)
+		       			||positions[fcoords2[1]-48][fcoords2[2]-48].getPawnOnPosition().getPawnType().equals("L")){
+		       		btnB.get(akey).setEnabled(false);
+		       	}
+		       	else{
+		       		btnB.get(akey).setEnabled(true);
+		       		btnB.get(akey).setBorder(border);
+		       		OK=true;
+		       	}
+		    }
+	    	
+	        else{
+	        	btnB.get(akey).setEnabled(false);
+	        }
+	        	
+	    }
+	   
+	    return OK;
+	}
+	
+	class ButtonListener1 implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			int x = 0;
+			String playerRED = "RED";
+			String playerBLUE = "BLUE";
+			boolean OK = false;
+			
+			if(!blueIsOK&&!redIsOK){
+				for(String key : btnB.keySet()){
+					char[] fcoords = key.toCharArray();
+					if(arg0.getSource().equals(btnB.get(key))){
+						//EDW KSEKINA H PARTIDA
+						//POLY APLA:EFOSON KSEKINA PANTA O BLUE TYPOS OTAN O GYROS EINAI MONOS(TO countTurn) TOTE 8A PREPEI NA EPILEKSEI 8ESH
+						//OPOU EXEI DIKO TOY PIONI, GIA NA KSEKINHSEI O GYROS, DHLADH TO PRVTO BUTTON POU EPILEGETAI NA EINAI DIKO TOY. TA IDIA
+						//ISXYOUN KAI GIA TO RED TYPO, ME TH DIAFORA OTI O GYROS PREPEI NA EINAI ZYGOS ARITHMOS
+						if(countTurn%2==1){
+							if(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnColor().equals("BLUE")){
+								for(String key2 : btnB.keySet()){
+									char[] fcoords2 = key2.toCharArray();
+									if(positions[fcoords2[1]-48][fcoords2[2]-48].getPawnOnPosition().getPawnColor().equals("BLUE")
+									||positions[fcoords2[1]-48][fcoords2[2]-48].getPawnOnPosition().getPawnType().equals("L")){//ME L SYMBOLIZOUME TH LIMNH
+										btnB.get(key2).setEnabled(false);
+									}
+									else{
+										btnB.get(key2).setEnabled(true);
+									}
+								}
+								if(!positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType().equals("B")&&
+										!positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType().equals("F")){
+									if(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType().equals("2")){
+										blocksToMove = 9;
+									}
+									attacker = new Movable(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType(),"BLUE",blocksToMove);
+									OK = blockManager(key,attacker);
+									if(!OK){
+										System.out.println("Wrong choise");
+										for(String akey : btnB.keySet()){
+											btnB.get(akey).setEnabled(true);
+										}
+									}
+									else{
+										positions[fcoords[1]-48][fcoords[2]-48].removePawnFromPosition();
+										blueIsOK=true;
+										
+									}
+								}
+								else{
+									System.out.println("Wrong choise");
+									for(String akey : btnB.keySet()){
+										btnB.get(akey).setEnabled(true);
+									}
+								}
+							}
+							else{
+								System.out.println("Wrong choise");
+							}
+						}
+						else{
+							if(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnColor().equals("RED")){
+								for(String key2 : btnB.keySet()){
+									char[] fcoords2 = key.toCharArray();
+									if(positions[fcoords2[1]-48][fcoords2[2]-48].getPawnOnPosition().getPawnColor().equals("RED")
+									||positions[fcoords2[1]-48][fcoords2[2]-48].getPawnOnPosition().getPawnType().equals("L"))//ME L SYMBOLIZOUME TH LIMNH
+										btnB.get(key2).setEnabled(false);
+									else{
+										btnB.get(key2).setEnabled(true);
+									}
+								}
+								if(!positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType().equals("B")&&
+										!positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType().equals("F")){
+									if(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType().equals("2"))
+										blocksToMove = 9;
+									attacker = new Movable(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType(),"RED",blocksToMove);
+									OK = blockManager(key,attacker);
+									if(!OK){
+										System.out.println("Wrong choise");
+										for(String akey : btnB.keySet()){
+											btnB.get(akey).setEnabled(true);
+										}
+									}
+									else{
+										positions[fcoords[1]-48][fcoords[2]-48].removePawnFromPosition();
+										redIsOK=true;
+									}
+								}
+								else{
+									for(String akey : btnB.keySet()){
+										btnB.get(akey).setEnabled(true);
+									}
+									System.out.println("Wrong choise");
+								}
+							}
+							else{
+								System.out.println("Wrong choise");
+							}
+						}
+					}
+				}
+			}
+			else{
+				if(blueIsOK){
+					for(String key : btnB.keySet()){
+						if(arg0.getSource().equals(btnB.get(key))){
+							char[] fcoords = key.toCharArray();
+							int i=fcoords[1]-48;
+							int j=fcoords[2]-48;
+							Pawn enemy = new Pawn("","");
+							if(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnColor().equals("RED")){
+								enemy = positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition();
+								x = attacker.attackEnemyPawn(enemy);
+								switch(x){
+								case 1:
+									positions[i][j].addPawnToPosition(attacker);
+									System.out.println("Attacker Wins Enemy");
+									FinalBoard();
+									break;
+								case 0:
+									positions[i][j].removePawnFromPosition();
+									System.out.println("Both Lose");
+									FinalBoard();
+									break;
+								case 2:
+									System.out.println("Blue Wins");
+									Game.getInstance().setBoard(positions);
+									Game game = Game.getInstance();
+									game.endGame();
+									main();
+									break;
+								default:
+									System.out.println("Attacker Losses to Enemy");
+									FinalBoard();
+									break;
+								}
+							}
+							else{
+								positions[i][j].addPawnToPosition(attacker);
+								Game.getInstance().setBoard(positions);
+								FinalBoard();
+							}
+							attacker = new Movable("","",0);
+						}
+					}
+					Game.getInstance().setBoard(positions);
+					blueIsOK=false;
+				}
+				else if(redIsOK){
+					for(String key : btnB.keySet()){
+						if(arg0.getSource().equals(btnB.get(key))){
+							char[] fcoords = key.toCharArray();
+							int i=fcoords[1]-48;
+							int j=fcoords[2]-48;
+							Pawn enemy = new Pawn("","");
+							if(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnColor().equals("BLUE")){
+								enemy = positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition();
+								x = attacker.attackEnemyPawn(enemy);
+								switch(x){
+								case 1:
+									positions[i][j].addPawnToPosition(attacker);
+									System.out.println("Attacker wins enemy");
+									FinalBoard();
+									break;
+								case 0:
+									positions[i][j].removePawnFromPosition();
+									System.out.println("Both lose");
+									FinalBoard();
+									break;
+								case 2:
+									System.out.println("Red player wins");
+									Game.getInstance().setBoard(positions);
+									Game game = Game.getInstance();
+									game.endGame();
+									main();
+									break;
+								default:
+									System.out.println("Attacker loses to enemy");
+									FinalBoard();
+									break;
+								}
+							}
+							else{
+								positions[i][j].addPawnToPosition(attacker);
+								Game.getInstance().setBoard(positions);
+								FinalBoard();
+							}
+							attacker = new Movable("","",0);
+						}
+					}
+					redIsOK=false;
+					Game.getInstance().setBoard(positions);
+				}
+			}
 		}
 	}
 	

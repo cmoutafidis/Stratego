@@ -1,9 +1,9 @@
+import java.io.Serializable;
 
-public class Movable extends Pawn{
+
+public class Movable extends Pawn implements Serializable{
 
 	private int blocksPawnCanMove;
-	//private Position[] positionsPawnCanMoveTo;
-	private int positionsPawnCanMoveTo;
 	
 	public Movable(String pawnType, String pawnColor, int blocksPawnCanMoveTo) {
 		super(pawnType, pawnColor);
@@ -39,5 +39,9 @@ public class Movable extends Pawn{
 				return -1;
 			}
 		}
+	}
+	
+	public int getBlocksPawnCanMove(){
+		return this.blocksPawnCanMove;
 	}
 }
