@@ -3,6 +3,7 @@ import java.io.Serializable;
 
 public class Position implements Serializable{
 
+	private static final long serialVersionUID = 1L;
 	private Pawn pawnOnPosition;
 	private boolean canBeAccessed;
 	
@@ -18,7 +19,7 @@ public class Position implements Serializable{
 	}
 
 	public void removePawnFromPosition(){
-		this.pawnOnPosition = null;
+		this.pawnOnPosition = new Pawn("","");
 	}
 	
 	public void addPawnToPosition(Pawn pawn){

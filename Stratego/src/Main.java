@@ -13,14 +13,11 @@ public class Main implements Runnable{
 
 	public static void main(String[] args) {
 		
-		//new PawnList(bluepawns);
-		//TheBoard bd = new TheBoard();
-		
 		PlayerList pl = PlayerList.getInstance();
 		pl.loadPlayers();
 		
 		new MainMenu();
-		(new Thread(new Main())).start();
+		//(new Thread(new Main())).start();
 	}
 	
 	@Override

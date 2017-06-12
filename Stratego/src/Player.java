@@ -4,7 +4,7 @@ import java.util.Timer;
 
 
 public class Player implements Serializable{
-	
+	private static final long serialVersionUID = 1L;
 	private String name;
 	private int wins;
 	private int losses;
@@ -49,13 +49,22 @@ public class Player implements Serializable{
 	
 	public double getWinRation(){
 		if(losses == 0){
-			return 100;
+			return 0;
 		}
 		return this.wins/this.losses;
 	}
 	
 	public double getFastestRound(){
-		return this.fastestRound;
+		return Math.round(this.fastestRound);
+	}
+	
+	public void setFastestRound(double time){
+		if(time<this.fastestRound){
+			this.fastestRound = time;
+		}
+		else if(this.fastestRound==-1){
+			this.fastestRound = time;
+		}
 	}
 	
 	public String getColor(){
