@@ -1,6 +1,9 @@
+import java.io.Serializable;
 
-public class Pawn implements Comparable{
 
+public class Pawn implements Comparable, Serializable{
+
+	private static final long serialVersionUID = 1L;
 	private String pawnType;
 	private String pawnColor;
 	private int blocksPawnCanMove;

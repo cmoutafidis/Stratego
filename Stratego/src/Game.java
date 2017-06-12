@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 
 public class Game implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	private String gameName;
 	private Player player1 = null;
 	private Player player2 = null;
@@ -15,6 +17,8 @@ public class Game implements Serializable{
 	private long timeStarted = 0; //ti wra arxise to create/load.
 	private double gameTime; //posi wra trexei to paixnidi mexri twra.
 	private boolean gameIsOver;
+	private boolean firstSave;
+	private int playersTurn;
 	
 	private static Game instance = null;
 	
@@ -43,6 +47,7 @@ public class Game implements Serializable{
 		this.board = new Position[10][10];
 		this.gameTime = 0;
 		this.gameIsOver = false;
+		this.firstSave = false;
 		
 		for(int i=0;i<10;i++){
 			for(int j=0;j<10;j++){
@@ -56,6 +61,11 @@ public class Game implements Serializable{
 		if(this.player1==null){
 			this.player1 = player1;
 			this.player2 = player2;
+		}
+	}
+	
+	public void firstSave(){
+		if(!this.firstSave){
 			this.saveGameFirstTime();
 		}
 	}
@@ -67,6 +77,7 @@ public class Game implements Serializable{
 	
 	//First Time Save
 	private void saveGameFirstTime(){
+		this.firstSave = true;
 		long tEnd = System.currentTimeMillis();
 		gameTime += (tEnd - timeStarted)/1000.0;
 		
@@ -105,7 +116,9 @@ public class Game implements Serializable{
 		this.gameName = name;
 	}
 	
-	public void saveGame(){
+	public void saveGame(int i){
+		
+		this.playersTurn = i;
 		if(timeStarted!=0){
 			long tEnd = System.currentTimeMillis();
 			gameTime += (tEnd - timeStarted)/1000.0;
@@ -228,6 +241,18 @@ public class Game implements Serializable{
 	
 	public boolean gameStatus(){
 		return this.gameIsOver;
+	}
+	
+	public double getTime(){
+		return this.gameTime;
+	}
+	
+	public int getPlayersTurn(){
+		return this.playersTurn;
+	}
+	
+	public String getName(){
+		return this.gameName;
 	}
 	
 }

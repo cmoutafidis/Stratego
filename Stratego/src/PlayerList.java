@@ -15,7 +15,8 @@ import java.util.ArrayList;
 
 
 public class PlayerList implements Serializable{
-	
+	private static final long serialVersionUID = 1L;
+
 	private static PlayerList instance = null;
 	
 	private ArrayList<Player> list;

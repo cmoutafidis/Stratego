@@ -78,7 +78,7 @@ public class MainMenu extends JFrame{
 	private static int vo;
 	private ArrayList<Pawn> bluepawns;
 	private Position[][] pos = new Position[10][10];
-	private ArrayList<String> array = new ArrayList<String>();
+	private ArrayList<String> array;
 	
 	private JPanel contentPane = new JPanel();
 	private HashMap<String,JButton> btnB = new HashMap<String,JButton>();
@@ -94,6 +94,7 @@ public class MainMenu extends JFrame{
 	
 	public MainMenu(){
 		
+		array = new ArrayList<String>();
 		array.add("B");
 		array.add("F");
 		array.add("10");
@@ -982,6 +983,8 @@ public class MainMenu extends JFrame{
 		exit.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+            	PlayerList pl = PlayerList.getInstance();
+            	pl.savePlayers();
             	System.exit(0);
             }
         });
@@ -1457,6 +1460,7 @@ public class MainMenu extends JFrame{
 						e.printStackTrace();
 					}
 					outcome = new JLabel("Game Started");
+					countTurn = -5;
 					FinalBoard();
 	            }
 	        }
@@ -1508,6 +1512,7 @@ public class MainMenu extends JFrame{
 						e.printStackTrace();
 					}
 					outcome = new JLabel("Game Started");
+					countTurn = -5;
 					FinalBoard();
 	        	}
 	        }
@@ -1663,7 +1668,95 @@ public class MainMenu extends JFrame{
 		SwingUtilities.updateComponentTreeUI(this);
 	}
 	
+	public void nextTurn(){
+		setLayout(new BorderLayout(1,1));
+	    setContentPane(new JLabel(new ImageIcon("backrounds/Gameplay_BG.png")));
+	    setLayout(new BorderLayout(0,0));
+	    
+	    Game game = Game.getInstance();
+	    
+	    JLabel message = new JLabel("Next player's turn");
+		JLabel ok = new JLabel("OK");
+		message.setForeground(Color.YELLOW);
+		ok.setForeground(Color.YELLOW);
+		
+		//font
+	    ok.setFont(ok.getFont().deriveFont(35f));
+	    message.setFont(message.getFont().deriveFont(50f));
+		
+		//border
+	    Border border = BorderFactory.createLineBorder(Color.YELLOW);
+	    ok.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+		
+		//alignment
+	    ok.setHorizontalAlignment(JTextField.CENTER);
+	    message.setHorizontalAlignment(JTextField.CENTER);
+		
+		//start listener
+		ok.addMouseListener(new MouseAdapter() {
+	        public void mousePressed(MouseEvent me) {
+	        	FinalBoard();
+	        }
+	    });
+		ok.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+	    //end listener
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new EmptyBorder(0, 0, 300, 0));
+		panel.add(ok);
+		panel.setOpaque(false);
+		
+		GridLayout grid = new GridLayout(0,1);
+		grid.setVgap(20);
+		
+		//add labels to panels
+		JPanel pane = new JPanel();
+		pane.setBorder(new EmptyBorder(400, 250, 50, 250));
+		pane.setLayout(grid);
+		pane.setOpaque(false);
+		pane.add(message);
+		add(pane, BorderLayout.CENTER);
+		add(panel, BorderLayout.PAGE_END);
+	    
+		SwingUtilities.updateComponentTreeUI(this);
+	}
+	
 	public void PawnList(ArrayList<Pawn> pawnNames, boolean empty) {
+		
+		array = new ArrayList<String>();
+		array.add("B");
+		array.add("F");
+		array.add("10");
+		array.add("1");
+		array.add("2");
+		array.add("3");
+		array.add("4");
+		array.add("5");
+		array.add("6");
+		array.add("7");
+		array.add("8");
+		array.add("9");
+		
+		contentPane = new JPanel();
 		frame = this;
 		frequencies = new ArrayList<Integer>();
 		freqs = new ArrayList<Integer>();
@@ -1701,6 +1794,8 @@ public class MainMenu extends JFrame{
 		}
 		
 		HashSet<String> noMultiples = new HashSet<String>(pawnTypes);
+		
+		model = new DefaultListModel();
 		
 		if(vo==0){
 			for(String name : noMultiples){
@@ -2052,6 +2147,7 @@ public class MainMenu extends JFrame{
 		
 		Game game = Game.getInstance();
 		Position[][] pos = game.getBoard();
+		game.firstSave();
 		
 		if(!game.gameStatus()){
 			positions = new Position[10][10];
@@ -2088,7 +2184,13 @@ public class MainMenu extends JFrame{
 			positions[5][6].getPawnOnPosition().setPawnType("L");
 			positions[5][7].setAccess(false);
 			positions[5][7].getPawnOnPosition().setPawnType("L");
-			countTurn++;
+			
+			if(countTurn==-5){
+				countTurn = game.getPlayersTurn();
+			}
+			else{
+				countTurn++;
+			}
 			JButton button;
 			contentPane.setLayout(new GridLayout(10, 10));
 			ButtonListener1 listener = new ButtonListener1();
@@ -2102,7 +2204,7 @@ public class MainMenu extends JFrame{
 				}
 			}
 			this.setLayout(new BorderLayout());
-			contentPane.setBorder(new EmptyBorder(20, 50, 0, 170));
+			contentPane.setBorder(new EmptyBorder(20, 50, 0, 220));
 			this.add(contentPane, BorderLayout.CENTER);
 			contentPane.setOpaque(false);
 			
@@ -2243,7 +2345,8 @@ public class MainMenu extends JFrame{
 		save.addMouseListener(new MouseAdapter() {
 	        public void mousePressed(MouseEvent me) {
 	        	Game game = Game.getInstance();
-	        	game.saveGame();
+	        	game.saveGame(countTurn%2);
+	        	outcome.setText("Game " + game.getName().replace("saves/GAME ", "").replace(".ser", "") + " saved");
 	        }
 	    });
 		save.addMouseListener(new MouseAdapter() {
@@ -2272,11 +2375,11 @@ public class MainMenu extends JFrame{
 		p1.add(exit, BorderLayout.CENTER);
 		
 		JPanel p2 = new JPanel(new BorderLayout());
-		p2.setBackground(new Color(230,230,200,80));
+		p2.setBackground(new Color(230,230,0,80));
 		p2.add(save, BorderLayout.CENTER);
 		
 		JPanel p3 = new JPanel(new BorderLayout());
-		p3.setBackground(new Color(230,230,0,80));
+		p3.setBackground(new Color(230,230,200,80));
 		p3.add(outcome, BorderLayout.CENTER);
 		
 		JPanel panel1 = new JPanel();
@@ -2512,30 +2615,31 @@ public class MainMenu extends JFrame{
 								case 1:
 									positions[i][j].addPawnToPosition(attacker);
 									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Won " + enemy.getPawnColor() + enemy.getPawnType() + ".");
-									FinalBoard();
+									nextTurn();
 									break;
 								case 0:
 									positions[i][j].removePawnFromPosition();
 									outcome = new JLabel("Both " + attacker.getPawnColor() + attacker.getPawnType() + " and " + enemy.getPawnColor() + enemy.getPawnType() + " lost.");
-									FinalBoard();
+									nextTurn();
 									break;
 								case 2:
 									outcome = new JLabel(Game.getInstance().getPlayer1().getName() + " Wins");
 									Game.getInstance().setBoard(positions);
 									Game game = Game.getInstance();
 									game.endGame();
-									FinalBoard();
+									nextTurn();
+									Game.getInstance().getPlayer1().setFastestRound(game.getTime());
 									break;
 								default:
 									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Lost to " + enemy.getPawnColor() + enemy.getPawnType() + ".");
-									FinalBoard();
+									nextTurn();
 									break;
 								}
 							}
 							else{
 								positions[i][j].addPawnToPosition(attacker);
 								Game.getInstance().setBoard(positions);
-								FinalBoard();
+								nextTurn();
 							}
 							attacker = new Movable("","",0);
 						}
@@ -2557,30 +2661,30 @@ public class MainMenu extends JFrame{
 								case 1:
 									positions[i][j].addPawnToPosition(attacker);
 									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Won " + enemy.getPawnColor() + enemy.getPawnType() + ".");
-									FinalBoard();
+									nextTurn();
 									break;
 								case 0:
 									positions[i][j].removePawnFromPosition();
 									outcome = new JLabel("Both " + attacker.getPawnColor() + attacker.getPawnType() + " and " + enemy.getPawnColor() + enemy.getPawnType() + " lost.");
-									FinalBoard();
+									nextTurn();
 									break;
 								case 2:
 									outcome = new JLabel(Game.getInstance().getPlayer2().getName() + " Wins");
 									Game.getInstance().setBoard(positions);
 									Game game = Game.getInstance();
 									game.endGame();
-									FinalBoard();
+									nextTurn();
 									break;
 								default:
 									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Lost to " + enemy.getPawnColor() + enemy.getPawnType() + ".");
-									FinalBoard();
+									nextTurn();
 									break;
 								}
 							}
 							else{
 								positions[i][j].addPawnToPosition(attacker);
 								Game.getInstance().setBoard(positions);
-								FinalBoard();
+								nextTurn();
 							}
 							attacker = new Movable("","",0);
 						}
