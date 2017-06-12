@@ -130,6 +130,7 @@ public class Game implements Serializable{
 	public void endGame(){
 		long tEnd = System.currentTimeMillis();
 		gameTime += (tEnd - timeStarted)/1000.0;
+		this.gameIsOver = true;
 	}
 	
 	
@@ -143,13 +144,7 @@ public class Game implements Serializable{
 	}
 	
 	private void loadGame(Game game){
-		this.player1 = game.getPlayer1();
-		this.player2 = game.getPlayer2();
-		this.board = game.getBoard();
-		this.gameTime = game.gameTime;
-		this.timeStarted = System.currentTimeMillis();
-		this.gameIsOver = false;
-		this.gameName = game.gameName;
+		Game.instance = game;
 	}
 	
 	public Player getPlayer1(){
@@ -229,6 +224,10 @@ public class Game implements Serializable{
 		int x = Integer.parseInt(split[0]);
 		int y = Integer.parseInt(split[1]);
 		this.playerClicksPosition(player, board[x][y]);
+	}
+	
+	public boolean gameStatus(){
+		return this.gameIsOver;
 	}
 	
 }

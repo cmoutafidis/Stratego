@@ -61,7 +61,7 @@ public class MainMenu extends JFrame{
 	private JTextField username, overallText, musicText, effectsText;
 	private JTable table;
     private JPasswordField password, passwordCheck;
-    private JLabel loginLabel, outcomeLabel;
+    private JLabel loginLabel, outcomeLabel, outcome;
     private Player player1, player2;
     private JFrame frame;
     
@@ -169,6 +169,7 @@ public class MainMenu extends JFrame{
 	    setLayout(new BorderLayout(0,0));
 	    
 	    JLabel create = new JLabel("Create Account");
+	    JLabel login = new JLabel("Login");
 	    JLabel exit = new JLabel("Exit");
 	    loginLabel = new JLabel("Login player " + (counter+1));
 	    outcomeLabel = new JLabel();
@@ -186,6 +187,8 @@ public class MainMenu extends JFrame{
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    create.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+	    login.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    exit.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    
@@ -195,6 +198,7 @@ public class MainMenu extends JFrame{
 	    username.setHorizontalAlignment(JTextField.CENTER);
 	    password.setHorizontalAlignment(JTextField.CENTER);
 	    create.setHorizontalAlignment(JTextField.CENTER);
+	    login.setHorizontalAlignment(JTextField.CENTER);
 	    exit.setHorizontalAlignment(JTextField.CENTER);
 	    
 	    //font
@@ -203,6 +207,7 @@ public class MainMenu extends JFrame{
 	    username.setFont(username.getFont().deriveFont(35f));
 	    password.setFont(password.getFont().deriveFont(35f));
 	    create.setFont(create.getFont().deriveFont(35f));
+	    login.setFont(login.getFont().deriveFont(35f));
 	    exit.setFont(exit.getFont().deriveFont(35f));
 	    
 	    //start listeners
@@ -317,6 +322,68 @@ public class MainMenu extends JFrame{
 			public void keyTyped(KeyEvent arg0) {
 			}
 	    });
+	    login.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+	    login.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            	PlayerList pl = PlayerList.getInstance();
+			    String user = username.getText().trim().replaceAll("\\s+", "");
+			    String pass = password.getText();
+			    int i = pl.checkUser(user, pass);
+			    if(counter==1){
+			    	if(user.equals(player1.getName())){
+			    		i=3;
+			    	}
+			    }
+			    switch(i){
+			    	case 0:
+			    		outcomeLabel.setText("Wrong Username");
+			    		break;
+			    	case 1:
+			    		outcomeLabel.setText("Wrong Password");
+			    		break;
+			    	case 2:
+			    		counter++;
+			    		outcomeLabel.setText("");
+			    		loginLabel.setText("Login player " + (counter+1));
+			    		if(counter==1){
+			    			player1 = pl.getPlayer(user);
+			    		}
+			    		else{
+			    			player2 = pl.getPlayer(user);
+			    		}
+			    		username.setText("Username");
+			    		password.setText("Password");
+			    		password.setEchoChar((char)0);
+			    		break;
+			    	case 3:
+			    		outcomeLabel.setText("Already logged in");
+			    		break;
+			    }
+			    if(counter==2){
+			    	counter=0;
+			    	main();
+			    }
+            }
+        });
 	    exit.addMouseListener(new MouseAdapter() {
 			
             @Override
@@ -407,6 +474,10 @@ public class MainMenu extends JFrame{
 		p1.setBackground(new Color(230,230,0,80));
 		p1.add(exit, BorderLayout.CENTER);
 		
+		JPanel p3 = new JPanel(new BorderLayout());
+		p3.setBackground(new Color(230,230,0,80));
+		p3.add(login, BorderLayout.CENTER);
+		
 		JPanel p2 = new JPanel(new BorderLayout());
 		p2.setBackground(new Color(230,230,0,80));
 		p2.add(create, BorderLayout.CENTER);
@@ -418,6 +489,7 @@ public class MainMenu extends JFrame{
 		pane.add(loginLabel);
 		pane.add(username);
 		pane.add(password);
+		pane.add(p3);
 		pane.add(outcomeLabel);
 		pane.add(p2);
 		pane.add(p1);
@@ -434,6 +506,7 @@ public class MainMenu extends JFrame{
 	    
 	    JLabel createLabel = new JLabel("Create Account");
 	    outcomeLabel = new JLabel();
+	    JLabel create = new JLabel("Create");
 	    JLabel login = new JLabel("Back to login");
 	    username = new JTextField("Username");
 	    password = new JPasswordField("Password");
@@ -451,6 +524,8 @@ public class MainMenu extends JFrame{
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    passwordCheck.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+	    create.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    login.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    
@@ -458,6 +533,7 @@ public class MainMenu extends JFrame{
 	    username.setHorizontalAlignment(JTextField.CENTER);
 	    password.setHorizontalAlignment(JTextField.CENTER);
 	    passwordCheck.setHorizontalAlignment(JTextField.CENTER);
+	    create.setHorizontalAlignment(JTextField.CENTER);
 	    login.setHorizontalAlignment(JTextField.CENTER);
 	    createLabel.setHorizontalAlignment(JTextField.CENTER);
 	    outcomeLabel.setHorizontalAlignment(JTextField.CENTER);
@@ -466,6 +542,7 @@ public class MainMenu extends JFrame{
 	    username.setFont(username.getFont().deriveFont(35f));
 	    password.setFont(password.getFont().deriveFont(35f));
 	    passwordCheck.setFont(passwordCheck.getFont().deriveFont(35f));
+	    create.setFont(create.getFont().deriveFont(35f));
 	    login.setFont(login.getFont().deriveFont(35f));
 	    createLabel.setFont(createLabel.getFont().deriveFont(35f));
 	    outcomeLabel.setFont(outcomeLabel.getFont().deriveFont(35f));
@@ -612,6 +689,57 @@ public class MainMenu extends JFrame{
 			public void keyTyped(KeyEvent arg0) {
 			}
 	    });
+	    create.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+	    create.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            	PlayerList pl = PlayerList.getInstance();
+			    String user = username.getText().trim().replaceAll("\\s+", "");
+			    String pass = password.getText();
+			    String passCheck = passwordCheck.getText();
+			    
+			    if(!user.equals("") && !pass.equals("") && !passCheck.equals("")) {
+			    	if(!pl.userExists(user)){
+			    		if(pass.equals(passCheck)){
+			    			pl.addUser(user, pass);
+			    			outcomeLabel.setText("User " + user + " created");
+			    			username.setText("Username");
+			    			password.setText("Password");
+			    			passwordCheck.setText("Confirm Password");
+			    			password.setEchoChar((char)0);
+			    		    passwordCheck.setEchoChar((char)0);
+			    		}
+			    		else{
+			    			outcomeLabel.setText("Passwords don't match");
+			    		}
+			    	}
+			    	else{
+			    		outcomeLabel.setText("User Already Exists");
+			    	}
+			    }
+			    else{
+			    	outcomeLabel.setText("Blank fields");
+			    }
+            }
+        });
 	    login.addMouseListener(new MouseAdapter() {
 			
             @Override
@@ -689,6 +817,10 @@ public class MainMenu extends JFrame{
 		p1.setBackground(new Color(230,230,0,80));
 		p1.add(login, BorderLayout.CENTER);
 		
+		JPanel p2 = new JPanel(new BorderLayout());
+		p2.setBackground(new Color(230,230,0,80));
+		p2.add(create, BorderLayout.CENTER);
+		
 		//add labels to panels
 		JPanel pane = new JPanel();
 		pane.setBorder(new EmptyBorder(200, 430, 200, 430));
@@ -697,6 +829,7 @@ public class MainMenu extends JFrame{
 		pane.add(username);
 		pane.add(password);
 		pane.add(passwordCheck);
+		pane.add(p2);
 		pane.add(outcomeLabel);
 		pane.add(p1);
 		pane.setOpaque(false);
@@ -916,76 +1049,65 @@ public class MainMenu extends JFrame{
 		setLayout(new BorderLayout(1,1));
 	    setContentPane(new JLabel(new ImageIcon("backrounds/Options_BG.png")));
 	    setLayout(new BorderLayout(0,0));
-	    
-	    String resolutions[] = {"Fullscreen", "1920x1080", "1366x768", "1280x1024", "1280x800", "800x600"};
-	    
-	    JLabel res = new JLabel("Resolution"),
-	    	   overall = new JLabel("Overall"),
+	    JLabel overall = new JLabel("Overall"),
 	    	   music = new JLabel("Music"),
 	    	   effects = new JLabel("Effects"),
-	    	   back = new JLabel("Back");
+	    	   back = new JLabel("Back"),
+	    	   apply = new JLabel("Apply");
 	    
 	    overallText = new JTextField(overallVol + "%");
 	    musicText = new JTextField(musicVol + "%");
 	    effectsText = new JTextField(effectsVol + "%");
-	    
-	    JComboBox<String> cb=new JComboBox<String>(resolutions);
-	    
 	    //border
 	    Border border = BorderFactory.createLineBorder(Color.BLACK);
-	    cb.setBorder(BorderFactory.createCompoundBorder(border, 
-	                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    overallText.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    musicText.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    effectsText.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
+	    apply.setBorder(BorderFactory.createCompoundBorder(border, 
+                BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    back.setBorder(BorderFactory.createCompoundBorder(border, 
                 BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 	    
 	    //alignment
 	    DefaultListCellRenderer dlcr = new DefaultListCellRenderer(); 
-	    dlcr.setHorizontalAlignment(DefaultListCellRenderer.CENTER); 
-	    cb.setRenderer(dlcr); 
+	    dlcr.setHorizontalAlignment(DefaultListCellRenderer.CENTER);  
 	    overallText.setHorizontalAlignment(JTextField.CENTER);
 	    musicText.setHorizontalAlignment(JTextField.CENTER);
 	    effectsText.setHorizontalAlignment(JTextField.CENTER);
-	    res.setHorizontalAlignment(JTextField.CENTER);
 	    overall.setHorizontalAlignment(JTextField.CENTER);
 	    music.setHorizontalAlignment(JTextField.CENTER);
 	    effects.setHorizontalAlignment(JTextField.CENTER);
+	    apply.setHorizontalAlignment(JTextField.CENTER);
 	    back.setHorizontalAlignment(JTextField.CENTER);
 	    
 	    //foreground
-	    res.setForeground(Color.YELLOW);
 	    overall.setForeground(Color.YELLOW);
 	    music.setForeground(Color.YELLOW);
 	    effects.setForeground(Color.YELLOW);
-	    cb.setForeground(Color.YELLOW);
 	    overallText.setForeground(Color.YELLOW);
 	    musicText.setForeground(Color.YELLOW);
 	    effectsText.setForeground(Color.YELLOW);
 	    
 	    //backround
-	    cb.setBackground(Color.LIGHT_GRAY);
 	    overallText.setBackground(Color.LIGHT_GRAY);
 	    musicText.setBackground(Color.LIGHT_GRAY);
 	    effectsText.setBackground(Color.LIGHT_GRAY);
 	    
 	    //font
-	    cb.setFont(cb.getFont().deriveFont(35f));
 	    overallText.setFont(overallText.getFont().deriveFont(35f));
 	    musicText.setFont(musicText.getFont().deriveFont(35f));
 	    effectsText.setFont(effectsText.getFont().deriveFont(35f));
-	    res.setFont(effectsText.getFont().deriveFont(40f));
-	    overall.setFont(effectsText.getFont().deriveFont(40f));
-	    music.setFont(effectsText.getFont().deriveFont(40f));
-	    effects.setFont(effectsText.getFont().deriveFont(40f));
-	    back.setFont(effectsText.getFont().deriveFont(35f));
+	    overall.setFont(overall.getFont().deriveFont(40f));
+	    music.setFont(music.getFont().deriveFont(40f));
+	    effects.setFont(effects.getFont().deriveFont(40f));
+	    apply.setFont(apply.getFont().deriveFont(35f));
+	    back.setFont(back.getFont().deriveFont(35f));
 	    
 	    //start listeners
-	    back.addMouseListener(new MouseAdapter() {
+	    apply.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
             	String overall = overallText.getText().trim().replaceAll("\\s+", "").replaceAll("%", "");
@@ -1006,6 +1128,31 @@ public class MainMenu extends JFrame{
             			effectsVol = Double.parseDouble(effects);
             		}
             	}
+                main();
+            }
+        });
+	    apply.addMouseListener(new MouseAdapter() {
+			
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	try {
+					InputStream in = new FileInputStream("music/button.wav");
+	            	AudioStream as = new AudioStream(in);         
+	            	AudioPlayer.player.start(as); 
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	
+            }
+        });
+	    back.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 main();
             }
         });
@@ -1037,18 +1184,21 @@ public class MainMenu extends JFrame{
 		p1.setBackground(new Color(230,230,0,80));
 		p1.add(back, BorderLayout.CENTER);
 		
+		JPanel p2 = new JPanel(new BorderLayout());
+		p2.setBackground(new Color(230,230,0,80));
+		p2.add(apply, BorderLayout.CENTER);
+		
 		//add labels to panels
 		JPanel pane = new JPanel();
 		pane.setBorder(new EmptyBorder(90, 420, 90, 420));
 		pane.setLayout(grid);
-		pane.add(res);
-		pane.add(cb);
 		pane.add(overall);
 		pane.add(overallText);
 		pane.add(music);
 		pane.add(musicText);
 		pane.add(effects);
 		pane.add(effectsText);
+		pane.add(p2);
 		pane.add(p1);
 		pane.setOpaque(false);
 		add(pane, BorderLayout.CENTER);
@@ -1226,7 +1376,7 @@ public class MainMenu extends JFrame{
 	    table.setGridColor(Color.BLACK);
 	    ((DefaultTableCellRenderer)table.getDefaultRenderer(Object.class)).setOpaque(false);
 	    table.setForeground(Color.BLACK);
-	    table.setBackground(new Color(230, 230, 230, 80));
+	    table.setBackground(new Color(180, 180, 180, 255));
 	    
 	    //font
 	    back.setFont(back.getFont().deriveFont(35f));
@@ -1291,9 +1441,23 @@ public class MainMenu extends JFrame{
 	            JTable table =(JTable) me.getSource();
 	            Point p = me.getPoint();
 	            int row = table.rowAtPoint(p);
+	            fileNameToLoad = listOfFiles[row].getName();
 	            if (me.getClickCount() == 2) {
-	                fileNameToLoad = listOfFiles[row].getName();
-	                //open game
+	            	FileInputStream streamIn;
+					try {
+						streamIn = new FileInputStream("saves/" + fileNameToLoad);
+						ObjectInputStream objectinputstream = new ObjectInputStream(streamIn);
+						Game game = Game.getInstance();
+		        	    game.setInstance((Game) objectinputstream.readObject());
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+					outcome = new JLabel("Game Started");
+					FinalBoard();
 	            }
 	        }
 	    });
@@ -1343,6 +1507,7 @@ public class MainMenu extends JFrame{
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}
+					outcome = new JLabel("Game Started");
 					FinalBoard();
 	        	}
 	        }
@@ -1784,6 +1949,7 @@ public class MainMenu extends JFrame{
 										countTurn++;
 										frequencies.remove(index);
 										countTurn = 0;
+										outcome = new JLabel("Game Started");
 										FinalBoard();
 									}
 								}
@@ -1865,14 +2031,20 @@ public class MainMenu extends JFrame{
 	
 	public void FinalBoard(){
 		
+		frame = this;
+		
 		setLayout(new BorderLayout(1,1));
 	    setContentPane(new JLabel(new ImageIcon("backrounds/Gameplay_BG.png")));
 	    setLayout(new BorderLayout(0,0));
 		
 		contentPane = new JPanel();
-		btnB = new HashMap<String,JButton>();
 		pawns = new ArrayList<Pawn>();
-		positions = new Position[10][10];
+		
+		//alignment
+	    outcome.setHorizontalAlignment(JTextField.CENTER);
+	    
+	    //font
+	    outcome.setFont(loginLabel.getFont().deriveFont(35f));
 		
 		blocksToMove = 1;
 		int i,j;
@@ -1881,98 +2053,147 @@ public class MainMenu extends JFrame{
 		Game game = Game.getInstance();
 		Position[][] pos = game.getBoard();
 		
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){
-				if(pos[i][j].getPawnOnPosition().getPawnType().equals("")){
-					somePawn = new Pawn("","");
-					positions[i][j] = new Position();
-					positions[i][j].addPawnToPosition(somePawn);
-					positions[i][j].setAccess(true);
+		if(!game.gameStatus()){
+			positions = new Position[10][10];
+			btnB = new HashMap<String,JButton>();
+			for(i=0;i<10;i++){
+				for(j=0;j<10;j++){
+					if(pos[i][j].getPawnOnPosition().getPawnType().equals("")){
+						somePawn = new Pawn("","");
+						positions[i][j] = new Position();
+						positions[i][j].addPawnToPosition(somePawn);
+						positions[i][j].setAccess(true);
+					}
+					else{
+						positions[i][j] = new Position();
+						positions[i][j].addPawnToPosition(pos[i][j].getPawnOnPosition());
+						positions[i][j].setAccess(pos[i][j].getAccess());
+					}
 				}
-				else{
-					positions[i][j] = new Position();
-					positions[i][j].addPawnToPosition(pos[i][j].getPawnOnPosition());
-					positions[i][j].setAccess(pos[i][j].getAccess());
+			}
+			
+			positions[4][2].setAccess(false);
+			positions[4][2].getPawnOnPosition().setPawnType("L");
+			positions[4][3].setAccess(false);
+			positions[4][3].getPawnOnPosition().setPawnType("L");
+			positions[5][2].setAccess(false);
+			positions[5][2].getPawnOnPosition().setPawnType("L");
+			positions[5][3].setAccess(false);
+			positions[5][3].getPawnOnPosition().setPawnType("L");
+			positions[4][6].setAccess(false);
+			positions[4][6].getPawnOnPosition().setPawnType("L");
+			positions[4][7].setAccess(false);
+			positions[4][7].getPawnOnPosition().setPawnType("L");
+			positions[5][6].setAccess(false);
+			positions[5][6].getPawnOnPosition().setPawnType("L");
+			positions[5][7].setAccess(false);
+			positions[5][7].getPawnOnPosition().setPawnType("L");
+			countTurn++;
+			JButton button;
+			contentPane.setLayout(new GridLayout(10, 10));
+			ButtonListener1 listener = new ButtonListener1();
+			
+			for(i=0;i<10;i++){
+				for(j=0;j<10;j++){  //ekana tis 2 for mia. Kanei new button, prosthetei listener kai to vazei sto hashmap
+					button = new JButton();//kai sto contentPane.
+					button.addActionListener(listener);
+					btnB.put("B" + i + j, button);
+					contentPane.add(button);
+				}
+			}
+			this.setLayout(new BorderLayout());
+			contentPane.setBorder(new EmptyBorder(20, 50, 0, 170));
+			this.add(contentPane, BorderLayout.CENTER);
+			contentPane.setOpaque(false);
+			
+			SwingUtilities.updateComponentTreeUI(this);
+			
+			for(i=0;i<10;i++){
+				for(j=0;j<10;j++){
+					if(positions[i][j].getAccess()){
+						if(positions[i][j].getPawnOnPosition().getPawnColor().equals("BLUE")){
+							if(countTurn%2==1){
+								JButton b = btnB.get("B" + i + j);
+								ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
+							    Image img = icon.getImage() ;  
+							    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+							    icon = new ImageIcon( newimg );
+							    b.setIcon(icon);
+							}
+							else{
+								JButton b = btnB.get("B" + i + j);
+								b.setBackground(Color.CYAN);
+								b.setIcon(null);
+							}
+							
+						}
+						else if(positions[i][j].getPawnOnPosition().getPawnColor().equals("RED")){
+							if(countTurn%2==0){
+								JButton b = btnB.get("B" + i + j);
+								ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
+							    Image img = icon.getImage() ;  
+							    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+							    icon = new ImageIcon( newimg );
+							    b.setIcon(icon);
+							}
+							else{
+								JButton b = btnB.get("B" + i + j);
+								b.setBackground(Color.RED);
+								b.setIcon(null);
+							}
+						}
+					}
+					else{
+						JButton b = btnB.get("B" + i + j);
+						b.setEnabled(false);
+						b.setBackground(Color.BLUE);
+					}
 				}
 			}
 		}
-		
-		positions[4][2].setAccess(false);
-		positions[4][2].getPawnOnPosition().setPawnType("L");
-		positions[4][3].setAccess(false);
-		positions[4][3].getPawnOnPosition().setPawnType("L");
-		positions[5][2].setAccess(false);
-		positions[5][2].getPawnOnPosition().setPawnType("L");
-		positions[5][3].setAccess(false);
-		positions[5][3].getPawnOnPosition().setPawnType("L");
-		positions[4][6].setAccess(false);
-		positions[4][6].getPawnOnPosition().setPawnType("L");
-		positions[4][7].setAccess(false);
-		positions[4][7].getPawnOnPosition().setPawnType("L");
-		positions[5][6].setAccess(false);
-		positions[5][6].getPawnOnPosition().setPawnType("L");
-		positions[5][7].setAccess(false);
-		positions[5][7].getPawnOnPosition().setPawnType("L");
-		countTurn++;
-		JButton button;
-		contentPane.setLayout(new GridLayout(10, 10));
-		ButtonListener1 listener = new ButtonListener1();
-		
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){  //ekana tis 2 for mia. Kanei new button, prosthetei listener kai to vazei sto hashmap
-				button = new JButton();//kai sto contentPane.
-				button.addActionListener(listener);
-				btnB.put("B" + i + j, button);
-				contentPane.add(button);
-			}
-		}
-		this.setLayout(new BorderLayout());
-		contentPane.setBorder(new EmptyBorder(20, 50, 0, 100));
-		this.add(contentPane, BorderLayout.CENTER);
-		contentPane.setOpaque(false);
-		
-		SwingUtilities.updateComponentTreeUI(this);
-		
-		for(i=0;i<10;i++){
-			for(j=0;j<10;j++){
-				if(positions[i][j].getAccess()){
-					if(positions[i][j].getPawnOnPosition().getPawnColor().equals("BLUE")){
-						if(countTurn%2==1){
-							JButton b = btnB.get("B" + i + j);
-							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
-						    Image img = icon.getImage() ;  
-						    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
-						    icon = new ImageIcon( newimg );
-						    b.setIcon(icon);
-						}
-						else{
-							JButton b = btnB.get("B" + i + j);
-							b.setBackground(Color.CYAN);
-							b.setIcon(null);
-						}
-						
-					}
-					else if(positions[i][j].getPawnOnPosition().getPawnColor().equals("RED")){
-						if(countTurn%2==0){
-							JButton b = btnB.get("B" + i + j);
-							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
-						    Image img = icon.getImage() ;  
-						    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
-						    icon = new ImageIcon( newimg );
-						    b.setIcon(icon);
-						}
-						else{
-							JButton b = btnB.get("B" + i + j);
-							b.setBackground(Color.RED);
-							b.setIcon(null);
-						}
-					}
+		else{
+			JButton button;
+			contentPane.setLayout(new GridLayout(10, 10));
+			ButtonListener1 listener = new ButtonListener1();
+			
+			for(i=0;i<10;i++){
+				for(j=0;j<10;j++){  //ekana tis 2 for mia. Kanei new button, prosthetei listener kai to vazei sto hashmap
+					button = new JButton();//kai sto contentPane.
+					button.addActionListener(listener);
+					btnB.put("B" + i + j, button);
+					contentPane.add(button);
 				}
-				else{
+			}
+			this.setLayout(new BorderLayout());
+			contentPane.setBorder(new EmptyBorder(20, 50, 0, 170));
+			this.add(contentPane, BorderLayout.CENTER);
+			contentPane.setOpaque(false);
+			SwingUtilities.updateComponentTreeUI(this);
+			
+			for(i=0;i<10;i++){
+				for(j=0;j<10;j++){
+					btnB.get("B" + i + j).setEnabled(false);
 					JButton b = btnB.get("B" + i + j);
-					b.setEnabled(false);
-					b.setBackground(Color.BLUE);
+					b.setBackground(null);
+					if(positions[i][j].getPawnOnPosition()!=null){
+						if(!positions[i][j].getPawnOnPosition().getPawnColor().equals("")){
+							ImageIcon icon = new ImageIcon(getClass().getResource("/images/" + positions[i][j].getPawnOnPosition().getPawnColor() + positions[i][j].getPawnOnPosition().getPawnType() + ".png"));
+						    Image img = icon.getImage() ;  
+						    Image newimg = img.getScaledInstance(b.getWidth(), b.getHeight(),  java.awt.Image.SCALE_SMOOTH ) ;  
+						    icon = new ImageIcon( newimg );
+						    b.setIcon(icon);
+						}
+					}
 				}
+				btnB.get("B" + "4" + "2").setBackground(Color.BLUE);
+				btnB.get("B" + "4" + "3").setBackground(Color.BLUE);
+				btnB.get("B" + "4" + "6").setBackground(Color.BLUE);
+				btnB.get("B" + "4" + "7").setBackground(Color.BLUE);
+				
+				btnB.get("B" + "5" + "2").setBackground(Color.BLUE);
+				btnB.get("B" + "5" + "3").setBackground(Color.BLUE);
+				btnB.get("B" + "5" + "6").setBackground(Color.BLUE);
+				btnB.get("B" + "5" + "7").setBackground(Color.BLUE);
 			}
 		}
 		
@@ -1981,7 +2202,7 @@ public class MainMenu extends JFrame{
 		
 		//font
 	    exit.setFont(exit.getFont().deriveFont(35f));
-	    save.setFont(exit.getFont().deriveFont(35f));
+	    save.setFont(save.getFont().deriveFont(35f));
 	    
 	    //border
 	    Border border = BorderFactory.createLineBorder(Color.BLACK);
@@ -2050,15 +2271,34 @@ public class MainMenu extends JFrame{
 		p1.setBackground(new Color(230,230,0,80));
 		p1.add(exit, BorderLayout.CENTER);
 		
+		JPanel p2 = new JPanel(new BorderLayout());
+		p2.setBackground(new Color(230,230,200,80));
+		p2.add(save, BorderLayout.CENTER);
+		
+		JPanel p3 = new JPanel(new BorderLayout());
+		p3.setBackground(new Color(230,230,0,80));
+		p3.add(outcome, BorderLayout.CENTER);
+		
+		JPanel panel1 = new JPanel();
+		panel1.setBorder(new EmptyBorder(0, 0, 10, 100));
+		panel1.add(p1);
+		panel1.setOpaque(false);
+		
 		JPanel panel2 = new JPanel();
 		panel2.setBorder(new EmptyBorder(0, 0, 10, 100));
-		panel2.add(p1);
+		panel2.add(p2);
 		panel2.setOpaque(false);
 		
+		JPanel panel4 = new JPanel();
+		panel4.setBorder(new EmptyBorder(0, 0, 10, 100));
+		panel4.add(p3);
+		panel4.setOpaque(false);
+		
 		JPanel panel3 = new JPanel();
-		panel3.setBorder(new EmptyBorder(0, 0, 10, 800));
+		panel3.setBorder(new EmptyBorder(0, 0, 10, 0));
+		panel3.add(panel1);
 		panel3.add(panel2);
-		panel3.add(save);
+		panel3.add(panel4);
 		panel3.setOpaque(false);
 		
 		add(panel3, BorderLayout.PAGE_END);
@@ -2199,7 +2439,6 @@ public class MainMenu extends JFrame{
 									attacker = new Movable(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType(),"BLUE",blocksToMove);
 									OK = blockManager(key,attacker);
 									if(!OK){
-										System.out.println("Wrong choise");
 										for(String akey : btnB.keySet()){
 											btnB.get(akey).setEnabled(true);
 										}
@@ -2211,14 +2450,12 @@ public class MainMenu extends JFrame{
 									}
 								}
 								else{
-									System.out.println("Wrong choise");
 									for(String akey : btnB.keySet()){
 										btnB.get(akey).setEnabled(true);
 									}
 								}
 							}
 							else{
-								System.out.println("Wrong choise");
 							}
 						}
 						else{
@@ -2239,7 +2476,6 @@ public class MainMenu extends JFrame{
 									attacker = new Movable(positions[fcoords[1]-48][fcoords[2]-48].getPawnOnPosition().getPawnType(),"RED",blocksToMove);
 									OK = blockManager(key,attacker);
 									if(!OK){
-										System.out.println("Wrong choise");
 										for(String akey : btnB.keySet()){
 											btnB.get(akey).setEnabled(true);
 										}
@@ -2253,11 +2489,9 @@ public class MainMenu extends JFrame{
 									for(String akey : btnB.keySet()){
 										btnB.get(akey).setEnabled(true);
 									}
-									System.out.println("Wrong choise");
 								}
 							}
 							else{
-								System.out.println("Wrong choise");
 							}
 						}
 					}
@@ -2277,23 +2511,23 @@ public class MainMenu extends JFrame{
 								switch(x){
 								case 1:
 									positions[i][j].addPawnToPosition(attacker);
-									System.out.println("Attacker Wins Enemy");
+									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Won " + enemy.getPawnColor() + enemy.getPawnType() + ".");
 									FinalBoard();
 									break;
 								case 0:
 									positions[i][j].removePawnFromPosition();
-									System.out.println("Both Lose");
+									outcome = new JLabel("Both " + attacker.getPawnColor() + attacker.getPawnType() + " and " + enemy.getPawnColor() + enemy.getPawnType() + " lost.");
 									FinalBoard();
 									break;
 								case 2:
-									System.out.println("Blue Wins");
+									outcome = new JLabel(Game.getInstance().getPlayer1().getName() + " Wins");
 									Game.getInstance().setBoard(positions);
 									Game game = Game.getInstance();
 									game.endGame();
-									main();
+									FinalBoard();
 									break;
 								default:
-									System.out.println("Attacker Losses to Enemy");
+									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Lost to " + enemy.getPawnColor() + enemy.getPawnType() + ".");
 									FinalBoard();
 									break;
 								}
@@ -2322,23 +2556,23 @@ public class MainMenu extends JFrame{
 								switch(x){
 								case 1:
 									positions[i][j].addPawnToPosition(attacker);
-									System.out.println("Attacker wins enemy");
+									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Won " + enemy.getPawnColor() + enemy.getPawnType() + ".");
 									FinalBoard();
 									break;
 								case 0:
 									positions[i][j].removePawnFromPosition();
-									System.out.println("Both lose");
+									outcome = new JLabel("Both " + attacker.getPawnColor() + attacker.getPawnType() + " and " + enemy.getPawnColor() + enemy.getPawnType() + " lost.");
 									FinalBoard();
 									break;
 								case 2:
-									System.out.println("Red player wins");
+									outcome = new JLabel(Game.getInstance().getPlayer2().getName() + " Wins");
 									Game.getInstance().setBoard(positions);
 									Game game = Game.getInstance();
 									game.endGame();
-									main();
+									FinalBoard();
 									break;
 								default:
-									System.out.println("Attacker loses to enemy");
+									outcome = new JLabel(attacker.getPawnColor() + attacker.getPawnType() + " Lost to " + enemy.getPawnColor() + enemy.getPawnType() + ".");
 									FinalBoard();
 									break;
 								}
