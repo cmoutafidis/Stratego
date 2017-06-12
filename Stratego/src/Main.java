@@ -17,7 +17,7 @@ public class Main implements Runnable{
 		pl.loadPlayers();
 		
 		new MainMenu();
-		//(new Thread(new Main())).start();
+		(new Thread(new Main())).start();
 	}
 	
 	@Override
