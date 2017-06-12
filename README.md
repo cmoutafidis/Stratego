@@ -1,2 +1,0 @@
-# Stratego
-Readme!
